@@ -1,3 +1,5 @@
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+
 package com.uniremote.ai.ui
 
 import androidx.compose.foundation.background
@@ -14,12 +16,6 @@ import androidx.compose.ui.unit.dp
 import com.uniremote.ai.model.Protocol
 import com.uniremote.ai.model.TvDevice
 
-/**
- * One remote UI, backed by whichever protocol controller matches the
- * selected device. Callbacks are wired to the relevant *Controller class
- * (Dlna/Roku/LgWebOs/SamsungTizen/Adb) by the caller — kept generic here so
- * the screen doesn't need to know protocol details.
- */
 @Composable
 fun RemoteScreen(
     device: TvDevice,
@@ -44,7 +40,6 @@ fun RemoteScreen(
             Text("Protokol: ${device.protocol}", style = MaterialTheme.typography.labelMedium)
             Spacer(Modifier.height(16.dp))
 
-            // Ses / kanal
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Button(onClick = onVolumeDown) { Text("Ses -") }
                 OutlinedButton(onClick = onMute) { Text("Sessiz") }
@@ -58,9 +53,6 @@ fun RemoteScreen(
 
             Spacer(Modifier.height(20.dp))
 
-            // Touchpad: sürükleme miktarını göreli dx/dy olarak yukarı iletir.
-            // DLNA'da bu bir sanal fare imlecine, WebOS/Tizen'de pointer
-            // API'sine, ADB'de input swipe'a çevrilir (Controller katmanında).
             var lastX by remember { mutableStateOf(0f) }
             var lastY by remember { mutableStateOf(0f) }
             Box(
@@ -98,8 +90,6 @@ fun RemoteScreen(
 
             Spacer(Modifier.height(24.dp))
 
-            // TV'de yazı yazmayı kolaylaştıran klavye: telefon klavyesinde
-            // yazılanı tek seferde TV'ye gönderir.
             OutlinedTextField(
                 value = textInput,
                 onValueChange = { textInput = it },
