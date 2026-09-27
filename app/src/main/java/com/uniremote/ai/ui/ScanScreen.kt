@@ -1,3 +1,5 @@
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+
 package com.uniremote.ai.ui
 
 import androidx.compose.foundation.clickable
@@ -11,7 +13,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.uniremote.ai.discovery.SsdpDiscovery
 import com.uniremote.ai.model.TvDevice
-import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 
 @Composable
@@ -33,7 +34,7 @@ fun ScanScreen(discovery: SsdpDiscovery, onDeviceSelected: (TvDevice) -> Unit) {
         }
     }
 
-    LaunchedEffect(Unit) { startScan() } // otomatik tarama: uygulama açılır açılmaz başlar
+    LaunchedEffect(Unit) { startScan() }
 
     Scaffold(topBar = { TopAppBar(title = { Text("UniRemote AI") }) }) { padding ->
         Column(Modifier.padding(padding).fillMaxSize().padding(16.dp)) {
