@@ -4,46 +4,29 @@ import com.malinskiy.adam.AndroidDebugBridgeClientFactory
 import com.malinskiy.adam.request.shell.v1.ShellCommandRequest
 import com.uniremote.ai.model.TvDevice
 
-/**
- * Fallback for the truly unbranded / no-name Android-based boxes that don't
- * answer to DLNA cleanly: raw ADB over the network (port 5555, or the
- * Android 11+ "wireless debugging" pairing port).
- *
- * IMPORTANT / by design, not a limitation to work around:
- * This only works if the box's owner has turned on network debugging
- * (Settings > Developer options > Wireless debugging / Network ADB) AND,
- * for Android 11+, entered the on-screen pairing code themselves. There is
- * no way to control a device over ADB without that explicit, physical
- * cooperation from whoever holds the box — which is the correct behavior:
- * this is a remote-control convenience for your own devices, not a way to
- * reach devices that haven't opted in.
- */
 class AdbController {
 
     private val adb = AndroidDebugBridgeClientFactory().build()
 
+    private fun serial(device: TvDevice) = "${device.ip}:${device.port}"
+
     suspend fun sendKeyEvent(device: TvDevice, keycode: Int) {
-        val client = adb.startSession(device.ip, device.port)
-        client.execute(ShellCommandRequest("input keyevent $keycode"))
+        adb.execute(ShellCommandRequest("input keyevent $keycode"), serial = serial(device))
     }
 
     suspend fun typeText(device: TvDevice, text: String) {
         val escaped = text.replace(" ", "%s")
-        val client = adb.startSession(device.ip, device.port)
-        client.execute(ShellCommandRequest("input text \"$escaped\""))
+        adb.execute(ShellCommandRequest("input text \"$escaped\""), serial = serial(device))
     }
 
     suspend fun tap(device: TvDevice, x: Int, y: Int) {
-        val client = adb.startSession(device.ip, device.port)
-        client.execute(ShellCommandRequest("input tap $x $y"))
+        adb.execute(ShellCommandRequest("input tap $x $y"), serial = serial(device))
     }
 
     suspend fun swipe(device: TvDevice, x1: Int, y1: Int, x2: Int, y2: Int, durationMs: Int = 150) {
-        val client = adb.startSession(device.ip, device.port)
-        client.execute(ShellCommandRequest("input swipe $x1 $y1 $x2 $y2 $durationMs"))
+        adb.execute(ShellCommandRequest("input swipe $x1 $y1 $x2 $y2 $durationMs"), serial = serial(device))
     }
 
-    // Common Android keycodes for convenience.
     object Keys {
         const val VOLUME_UP = 24
         const val VOLUME_DOWN = 25
