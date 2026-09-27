@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId = "com.uniremote.ai"
-        minSdk = 26          // SSDP/multicast + coroutine WebSockets need a modern base
+        minSdk = 26
         targetSdk = 34
         versionCode = 1
         versionName = "0.1.0"
@@ -23,6 +23,15 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions { jvmTarget = "17" }
+
+    packaging {
+        resources {
+            excludes += "META-INF/INDEX.LIST"
+            excludes += "META-INF/DEPENDENCIES"
+            excludes += "META-INF/*.kotlin_module"
+            excludes += "META-INF/io.netty.versions.properties"
+        }
+    }
 }
 
 dependencies {
@@ -33,16 +42,8 @@ dependencies {
     implementation("androidx.compose.material3:material3")
     implementation("androidx.navigation:navigation-compose:2.8.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.6")
-
-    // HTTP + WebSocket client for DLNA/SOAP, Roku ECP, LG WebOS(SSAP), Samsung Tizen.
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
-
-    // Lightweight XML parsing for UPnP device-description docs.
     implementation("org.simpleframework:simple-xml:2.7.1")
-
-    // Pure-Kotlin/Java ADB client (no platform-tools binary needed).
-    // Verify latest coordinates on Maven Central before building — this
-    // library is what makes ADB control possible without bundling adb.exe.
     implementation("com.malinskiy.adam:adam:0.5.9")
 
     testImplementation("junit:junit:4.13.2")
