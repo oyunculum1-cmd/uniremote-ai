@@ -10,33 +10,18 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flowOn
 import java.net.DatagramPacket
-import java.net.DatagramSocket
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.MulticastSocket
 
-/**
- * Universal discovery for the "no dedicated app / no brand" case.
- *
- * SSDP (Simple Service Discovery Protocol, part of UPnP) is broadcast over
- * multicast UDP on 239.255.255.250:1900. Essentially every smart TV, no
- * matter how obscure or unbranded, answers an SSDP M-SEARCH if it exposes
- * ANY UPnP/DLNA service (which almost all of them do, even cheap ones) —
- * this is what makes it the right first scan, before trying vendor-specific
- * protocols (Roku/LG/Samsung) or ADB.
- *
- * We do a couple of searches with different search-targets (ssdp:all and
- * the MediaRenderer service type) because some firmware only answers one.
- */
 class SsdpDiscovery(private val context: Context) {
 
     private val searchTargets = listOf(
         "ssdp:all",
         "urn:schemas-upnp-org:device:MediaRenderer:1",
-        "urn:dial-multiscreen-org:service:dial:1" // used by many smart TVs (incl. some Samsung/LG) for app launch
+        "urn:dial-multiscreen-org:service:dial:1"
     )
 
-    /** Emits one TvDevice per unique IP that answers, guessed protocol included. */
     fun scan(timeoutMs: Long = 4000): Flow<TvDevice> = callbackFlow {
         val wifi = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
         val lock = wifi.createMulticastLock("uniremote-ssdp")
@@ -90,7 +75,7 @@ class SsdpDiscovery(private val context: Context) {
                         port = 1900,
                         protocol = guessProtocol(server, location),
                         friendlyServer = server,
-                        extra = mutableMapOf().apply { location?.let { put("ssdpLocation", it) } }
+                        extra = mutableMapOf<String, String>().apply { location?.let { put("ssdpLocation", it) } }
                     )
                 )
             }
@@ -110,18 +95,13 @@ class SsdpDiscovery(private val context: Context) {
             }
             .toMap()
 
-    /**
-     * Vendor detection is a best-effort string match on the SSDP SERVER
-     * header / LOCATION URL. Unrecognized (no-name, generic) TVs correctly
-     * fall through to DLNA — which is exactly the case this app exists for.
-     */
     private fun guessProtocol(server: String?, location: String?): Protocol {
         val hay = ((server ?: "") + " " + (location ?: "")).lowercase()
         return when {
             "roku" in hay -> Protocol.ROKU
             "lg" in hay || "webos" in hay -> Protocol.LG_WEBOS
             "samsung" in hay || "tizen" in hay -> Protocol.SAMSUNG_TIZEN
-            else -> Protocol.DLNA // safe default: if it answered SSDP, DLNA control is very likely to work
+            else -> Protocol.DLNA
         }
     }
 
