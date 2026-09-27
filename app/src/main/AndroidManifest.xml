@@ -8,11 +8,9 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
         android:label="UniRemote AI"
         android:theme="@style/Theme.Material3.DayNight.NoActionBar"
         android:usesCleartextTraffic="true">
-        <!-- cleartext needed: SSDP/DLNA/Roku ECP/Tizen speak plain HTTP/WS on the LAN -->
 
         <activity
             android:name=".MainActivity"
